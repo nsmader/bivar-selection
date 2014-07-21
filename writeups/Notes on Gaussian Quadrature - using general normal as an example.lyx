@@ -1,0 +1,530 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\usepackage{booktabs}
+\usepackage{placeins}
+\usepackage{rotating}
+\usepackage{lscape}
+\usepackage{etoolbox}
+\usepackage{pgffor}
+\usepackage{subfig}
+\usepackage{ifthen}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing double
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Notes on Gaussian Quadrature with Application to Multiple Dimensions of
+ Selection
+\end_layout
+
+\begin_layout Section
+Goal
+\end_layout
+
+\begin_layout Standard
+For the motivation of this model, see the 
+\begin_inset Quotes eld
+\end_inset
+
+Panel Data Models Controlling for Selection into the GED and Whether or
+ Not the Agent Works
+\begin_inset Quotes erd
+\end_inset
+
+ by James Heckman.
+\end_layout
+
+\begin_layout Standard
+Our eventual object of interest is to evaluate integrals of the form:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E\left[\left.V\right|V>a,M>b\right]=\frac{\int_{a}^{\infty}V\int_{b}^{\infty}f\left(V,M\right)dVdM}{\int_{a}^{\infty}\int_{b}^{\infty}f\left(V,M\right)dVdM}
+\]
+
+\end_inset
+
+ where the random variables 
+\begin_inset Formula $V$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ are distributed bivariate normal 
+\begin_inset Formula $N\left(0,\Sigma_{VM}\right)$
+\end_inset
+
+ with
+\begin_inset Formula 
+\[
+\Sigma_{VM}=\left[\begin{array}{cc}
+1 & .\\
+\rho & 1
+\end{array}\right]
+\]
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In the following sections, we develop the methods necessary to implement
+ this indefinite multidimensional integral using the Gaussian quadrature
+ method.
+\end_layout
+
+\begin_layout Section
+Solution for Single Dimension of Integration
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $V\sim N\left(\mu,\sigma^{2}\right)$
+\end_inset
+
+.
+ Redefine the integral problem as
+\begin_inset Formula 
+\begin{eqnarray*}
+E\left[\left.V\right|V>a\right] & = & \frac{\int_{a}^{\infty}vf\left(v\right)dv}{\int_{a}^{\infty}f\left(v\right)dv}\\
+ & = & \frac{\int_{a}^{\infty}v\frac{1}{\sigma}\phi\left(\frac{v-\mu}{\sigma}\right)dv}{\int_{a}^{\infty}\frac{1}{\sigma}\phi\left(\frac{v-\mu}{\sigma}\right)dv}\\
+ & = & \frac{\int_{\frac{a-\mu}{\sigma}}^{\infty}\left[U\sigma+\mu\right]\phi\left(U\right)\sigma dU}{\int_{\frac{a-\mu}{\sigma}}^{\infty}\phi\left(U\right)\sigma dU}\\
+ & = & \frac{\int_{\frac{a-\mu}{\sigma}}^{\infty}\left[U\sigma+\mu\right]\phi\left(U\right)dU}{1-\Phi\left(\frac{a}{\sigma}-\mu\right)}\\
+ & = & \frac{\left\{ \sigma\int_{\frac{a-\mu}{\sigma}}^{\infty}U\phi\left(U\right)dU+\mu\int_{\frac{a-\mu}{\sigma}}^{\infty}\phi\left(U\right)dU\right\} }{1-\Phi\left(\frac{a}{\sigma}-\mu\right)}\\
+ & = & \sigma\frac{\int_{\frac{a-\mu}{\sigma}}^{\infty}U\phi\left(U\right)dU}{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}+\mu
+\end{eqnarray*}
+
+\end_inset
+
+The third line uses the change of variables 
+\begin_inset Formula $v=\left(U\sigma+\mu\right)$
+\end_inset
+
+ with 
+\begin_inset Formula $dv=\sigma dU$
+\end_inset
+
+.
+ Notice that if our variable 
+\begin_inset Formula $V\sim N\left(0,1\right)$
+\end_inset
+
+ this expression simplifies to 
+\begin_inset Formula 
+\[
+E\left[\left.V\right|V>a\right]=\frac{\int_{a}^{\infty}U\phi\left(U\right)dU}{1-\Phi\left(a\right)}
+\]
+
+\end_inset
+
+This special case is commonly encountered, and the solution is well known
+ as the inverse Mills ratio 
+\begin_inset Formula $\lambda\left(a\right)\equiv\phi\left(a\right)/\left[1-\Phi\left(a\right)\right]$
+\end_inset
+
+.
+ Because our two-dimensional problem does not have a closed-form solution,
+ we motivate the manipulations necessary for numerical integration with
+ this simpler case.
+\end_layout
+
+\begin_layout Standard
+We will show how this quantity can be approximated using the Gaussian quadrature
+ method.
+ Gaussian quadrature uses the approximation
+\begin_inset Formula 
+\begin{equation}
+\int_{-1}^{1}f\left(x\right)dx\approx\sum_{i=1}^{n}\omega_{i}f\left(x_{i}\right)\label{eq:Quadrature Sum}
+\end{equation}
+
+\end_inset
+
+where the 
+\begin_inset Formula $x_{i}$
+\end_inset
+
+ are select points within the interval 
+\begin_inset Formula $\left[-1,1\right]$
+\end_inset
+
+ and 
+\begin_inset Formula $\omega_{i}$
+\end_inset
+
+ are unique solutions to the problem of producing an exact integral of a
+ polynomial of degree 
+\begin_inset Formula $2n-1$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The first necessary step is to transform our integral 
+\begin_inset Formula $\sigma\frac{\int_{\frac{a-\mu}{\sigma}}^{\infty}U\phi\left(U\right)dU}{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}+\mu$
+\end_inset
+
+ into a definite integral.
+ We use the change of variables 
+\begin_inset Formula $U=\Phi^{-1}\left(u\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $du=\phi\left(U\right)dU$
+\end_inset
+
+.
+ The bounds of integration will be 
+\begin_inset Formula $\left[\Phi\left(\frac{a-\mu}{\sigma}\right),\Phi\left(\infty\right)\right]=\left[\Phi\left(\frac{a-\mu}{\sigma}\right),1\right]$
+\end_inset
+
+.
+ Using these transformations we obtain
+\begin_inset Formula 
+\begin{eqnarray}
+\sigma\frac{\int_{\frac{a-\mu}{\sigma}}^{\infty}U\phi\left(U\right)dU}{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}+\mu & = & \sigma\int_{\Phi\left(\frac{a-\mu}{\sigma}\right)}^{1}\Phi^{-1}\left(u\right)\frac{\phi\left(\Phi^{-1}\left(u\right)\right)}{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}\frac{du}{\phi\left(\Phi^{-1}\left(u\right)\right)}+\mu\label{eq:1 dim integral, first change of variables}\\
+ & = & \sigma\int_{\Phi\left(\frac{a-\mu}{\sigma}\right)}^{1}\frac{\Phi^{-1}\left(u\right)}{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}du+\mu\nonumber 
+\end{eqnarray}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In order to use the quadrature method, we perform one more change of variables
+ to change the bounds of integration to 
+\begin_inset Formula $\left[-1,1\right]$
+\end_inset
+
+.
+ We want 
+\begin_inset Formula $p$
+\end_inset
+
+ and 
+\begin_inset Formula $q$
+\end_inset
+
+ such that 
+\begin_inset Formula $u=px+q$
+\end_inset
+
+ and
+\begin_inset Formula $-1\leq x\leq1\Rightarrow-p+q\leq u\leq p+q$
+\end_inset
+
+.
+ Given that 
+\begin_inset Formula $u$
+\end_inset
+
+ has bounds 
+\begin_inset Formula $a$
+\end_inset
+
+ and 
+\begin_inset Formula $b$
+\end_inset
+
+, this is a two-equation system where it is straightforward to show that
+ 
+\begin_inset Formula $q=\frac{b+a}{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $p=\frac{b-a}{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Thus, we can use this second change of variables with 
+\begin_inset Formula $u=\frac{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}x+\frac{1+\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $du=\frac{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}dx$
+\end_inset
+
+ in combination with equation (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:1 dim integral, first change of variables"
+
+\end_inset
+
+) to obtain
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+\sigma\int_{\Phi\left(\frac{a}{\sigma}-\mu\right)}^{1}\frac{\Phi^{-1}\left(u\right)}{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}du+\mu & = & \sigma\int_{-1}^{1}\frac{\Phi^{-1}\left(\frac{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}x+\frac{1+\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}\right)}{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}\left(\frac{1-\Phi\left(a\right)}{2}dx\right)+\mu\\
+ & = & \sigma\int_{-1}^{1}\frac{1}{2}\Phi^{-1}\left(\frac{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}x+\frac{1+\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}\right)dx+\mu
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Thus we can apply equation (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Quadrature Sum"
+
+\end_inset
+
+) where 
+\begin_inset Formula $f\left(x_{i}\right)=\frac{1}{2}\Phi^{-1}\left(\frac{1-\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}x_{i}+\frac{1+\Phi\left(\frac{a-\mu}{\sigma}\right)}{2}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Solution for Two Dimensional Integration
+\end_layout
+
+\begin_layout Standard
+The double integral reflecting dual truncation is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+E\left[\left.V\right|V>a,M>b\right] & = & \int_{a}^{\infty}V\int_{b}^{\infty}f\left(V,M\right)dMdV\\
+ & = & \left.\int_{a}^{\infty}V\int_{b}^{\infty}\phi_{2}\left(V,M,\rho\right)dMdV\right/\left[\int_{a}^{\infty}\int_{b}^{\infty}\phi_{2}\left(V,M,\rho\right)dVdM\right]
+\end{eqnarray*}
+
+\end_inset
+
+where 
+\begin_inset Formula $\phi_{2}\left(x,y,\rho\right)$
+\end_inset
+
+ is the bivariate normal density function with correlation parameter 
+\begin_inset Formula $\rho$
+\end_inset
+
+, where
+\begin_inset Formula 
+\[
+\phi\left(x,y,\rho\right)=\frac{1}{2\pi\sqrt{1-\rho^{2}}}exp\left\{ -\frac{x^{2}+y^{2}+2\rho xy}{2\left(1-\rho^{2}\right)}\right\} 
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We will use the dual change of variables of 
+\begin_inset Formula $u=\Phi$
+\end_inset
+
+
+\begin_inset Formula $\left(V\right)$
+\end_inset
+
+, 
+\begin_inset Formula $w=\Phi\left(M\right)$
+\end_inset
+
+.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Recall that both 
+\begin_inset Formula $V$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ are standard normal random variables in our application.
+\end_layout
+
+\end_inset
+
+ The relationships we use for substitution are 
+\begin_inset Formula $V=\Phi^{-1}\left(u\right)$
+\end_inset
+
+, 
+\begin_inset Formula $M=\Phi^{-1}\left(w\right)$
+\end_inset
+
+, 
+\begin_inset Formula $du=\phi\left(V\right)dV$
+\end_inset
+
+, 
+\begin_inset Formula $dw=\phi\left(M\right)$
+\end_inset
+
+, and the bounds of the integrals will be 
+\begin_inset Formula $\left[\Phi\left(a\right),\Phi\left(\infty\right)\right]=\left[\Phi\left(a\right),1\right]$
+\end_inset
+
+ for 
+\begin_inset Formula $u$
+\end_inset
+
+ and 
+\begin_inset Formula $\left[\Phi\left(b\right),\Phi\left(\infty\right)\right]=\left[\Phi\left(b\right),1\right]$
+\end_inset
+
+ for 
+\begin_inset Formula $w$
+\end_inset
+
+.
+ This transforms our integral to
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left.\int_{\Phi\left(a\right)}^{1}\Phi^{-1}\left(u\right)\left[\int_{\Phi\left(b\right)}^{1}\phi_{2}\left(\Phi^{-1}\left(u\right),\Phi^{-1}\left(w\right),\rho\right)\frac{dw}{\phi\left(\Phi^{-1}\left(w\right)\right)}\right]\frac{du}{\phi\left(\Phi^{-1}\left(u\right)\right)}\right/\left[\int_{a}^{\infty}\int_{b}^{\infty}\phi_{2}\left(V,M,\rho\right)dVdM\right]
+\]
+
+\end_inset
+
+We do not need to transform the denominator since the value of that integral
+ is well known.
+\end_layout
+
+\begin_layout Standard
+We apply one more set of variable substitution to transform the bounds to
+ 
+\begin_inset Formula $\left[-1,1\right]$
+\end_inset
+
+ for both integrals.
+ The substitution is 
+\begin_inset Formula $u=\frac{1-\Phi\left(a\right)}{2}x+\frac{1+\Phi\left(a\right)}{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $w=\frac{1-\Phi\left(b\right)}{2}y+\frac{1+\Phi\left(b\right)}{2}$
+\end_inset
+
+, and 
+\begin_inset Formula $du=\frac{1-\Phi\left(a\right)}{2}dx$
+\end_inset
+
+ and 
+\begin_inset Formula $dw=\frac{1-\Phi\left(b\right)}{2}dy$
+\end_inset
+
+.
+ Applying it yields:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $...=\left.\int_{-1}^{1}\Phi^{-1}\left(\frac{1-\Phi\left(a\right)}{2}x+\frac{1+\Phi\left(a\right)}{2}\right)\left[\int_{-1}^{1}\phi_{2}\left(\Phi^{-1}\left(\frac{1-\Phi\left(a\right)}{2}x+\frac{1+\Phi\left(a\right)}{2}\right),\Phi^{-1}\left(\frac{1-\Phi\left(b\right)}{2}y+\frac{1+\Phi\left(b\right)}{2}\right),\rho\right)\frac{1-\Phi\left(b\right)}{2}\frac{dy}{\phi\left(\Phi^{-1}\left(\frac{1-\Phi\left(b\right)}{2}y+\frac{1+\Phi\left(b\right)}{2}\right)\right)}\right]\frac{1-\Phi\left(a\right)}{2}\frac{dx}{\phi\left(\Phi^{-1}\left(\frac{1-\Phi\left(a\right)}{2}x+\frac{1+\Phi\left(a\right)}{2}\right)\right)}\right/\left[\int_{a}^{\infty}\int_{b}^{\infty}\phi_{2}\left(V,M,\rho\right)dVdM\right]$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Simplifying the expression:
+\begin_inset Formula 
+\[
+...=\frac{\left(1-\Phi\left(b\right)\right)\left(1-\Phi\left(a\right)\right)}{4}\left.\left[\int_{-1}^{1}\int_{-1}^{1}\frac{p\phi_{2}\left(p,q,\rho\right)}{\phi\left(q\right)\phi\left(p\right)}dydx\right]\right/\left[\int_{a}^{\infty}\int_{b}^{\infty}\phi_{2}\left(V,M,\rho\right)dVdM\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where
+\begin_inset Formula 
+\begin{eqnarray*}
+p & = & \Phi^{-1}\left(\frac{1-\Phi\left(a\right)}{2}x+\frac{1+\Phi\left(a\right)}{2}\right)\\
+q & = & \Phi^{-1}\left(\frac{1-\Phi\left(b\right)}{2}y+\frac{1+\Phi\left(b\right)}{2}\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
